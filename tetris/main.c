@@ -41,6 +41,15 @@ typedef struct {
 	bool current;
 }Block;
 
+typedef struct {
+	int x;
+	int y;
+	int score;
+	int rotate;
+	int fallTime;
+	ShapeId queue[4];
+}State;
+
 Shape shape[7] = {
 	{
 		.shape = I,
@@ -221,6 +230,14 @@ void resetBlock(Block* block) {
 
 
 int main() {
+	State state = {
+		.x = 0,
+		.y = 0,
+		.rotate = 0,
+		.fallTime = 0,
+	};
+
+	
 	Block canvas[CANVAS_HEIGHT][CANVAS_WIDTH]; // 畫布
 	// 初始化畫布
 	for (int i = 0; i < CANVAS_HEIGHT; i++) {
@@ -229,12 +246,27 @@ int main() {
 		}
 	}
 
+	Shape shapeData = shape[1];
+
+	for (int i = 0; i < shapeData.size; i++) {
+		for(int j = 0; j < shapeData.size; j++) {
+			if (shapeData.rotates[0][i][j] == 1) {
+				canvas[i][j].shape = shapeData.shape;
+				canvas[i][j].color = shapeData.color;
+				canvas[i][j].current = true;
+			}
+		}
+	}
+
+	printf("\033[0;0H\n");
+
 	// 設定一個方塊
 	for (int i = 0; i < CANVAS_HEIGHT; i++) {
 		printf("|");
 		for (int j = 0; j < CANVAS_WIDTH; j++) {
-			printf("-1");
+			printf("\033[%dm\u3000", canvas[i][j].color);
 		}
+		printf("\033[0m");
 		printf("|\n");
 	}
 
