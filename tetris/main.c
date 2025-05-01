@@ -1,4 +1,10 @@
 #include<stdio.h>
+#include<stdbool.h>
+#include<string.h>
+
+#define CANVAS_WIDTH 10
+#define CANVAS_HEIGHT 20
+
 
 typedef enum {
 	EMPTY = -1,
@@ -28,6 +34,12 @@ typedef struct {
 	int size;
 	char rotates[4][4][4];
 } Shape;
+
+typedef struct {
+	Color color;
+	ShapeId shape;
+	bool current;
+}Block;
 
 Shape shape[7] = {
 	{
@@ -63,19 +75,22 @@ Shape shape[7] = {
 		.size = 3,
 		.rotates = {
 			{
-				{1, 1},
-				{1, 1}
-
+				{1, 0, 0},
+				{1, 1, 1},
+				{0, 0, 0}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 1, 1},
+				{0, 1, 0},
+				{0, 1, 0}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 0, 0},
+				{1, 1, 1},
+				{0, 0, 1}
 			},{
-				{1, 1},
-				{1, 1}
-			},
+				{0, 1, 0},
+				{0, 1, 0},
+				{1, 1, 0}
+			}
 		}
 	},{
 		.shape = O,
@@ -85,7 +100,6 @@ Shape shape[7] = {
 			{
 				{1, 1},
 				{1, 1}
-				
 			},{
 				{1, 1},
 				{1, 1}
@@ -95,27 +109,30 @@ Shape shape[7] = {
 			},{
 				{1, 1},
 				{1, 1}
-			},
+			}
 		}
 	},{
-		.shape = L,
+		.shape = L,	
 		.color = YELLOW,
 		.size = 3,
 		.rotates = {
 			{
-				{1, 1},
-				{1, 1}
-
+				{0, 0, 1},
+				{1, 1, 1},
+				{0, 0, 0}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 1, 0},
+				{0, 1, 0},
+				{0, 1, 1}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 0, 0},
+				{1, 1, 1},
+				{1, 0, 0}
 			},{
-				{1, 1},
-				{1, 1}
-			},
+				{1, 1, 0},
+				{0, 1, 0},
+				{0, 1, 0}
+			}
 		}
 	},{
 		.shape = S,
@@ -123,19 +140,22 @@ Shape shape[7] = {
 		.size = 3,
 		.rotates = {
 			{
-				{1, 1},
-				{1, 1}
-
+				{0, 1, 1},
+				{1, 1, 0},
+				{0, 0, 0}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 1, 0},
+				{0, 1, 1},
+				{0, 0, 1}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 0, 0},
+				{0, 1, 1},
+				{1, 1, 0}
 			},{
-				{1, 1},
-				{1, 1}
-			},
+				{1, 0, 0},
+				{1, 1, 0},
+				{0, 1, 0}
+			}
 		}
 	},{
 		.shape = T,
@@ -143,64 +163,79 @@ Shape shape[7] = {
 		.size = 3,
 		.rotates = {
 			{
-				{1, 1},
-				{1, 1}
-
+				{0, 1, 0},
+				{1, 1, 1},
+				{0, 0, 0}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 1, 0},
+				{0, 1, 1},
+				{0, 1, 0}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 0, 0},
+				{1, 1, 1},
+				{0, 1, 0}
 			},{
-				{1, 1},
-				{1, 1}
-			},
+				{0, 1, 0},
+				{1, 1, 0},
+				{0, 1, 0}
+			}
 		}
-	},{
+	}, {
 		.shape = Z,
 		.color = RED,
 		.size = 3,
 		.rotates = {
 			{
-				{1, 1},
-				{1, 1}
-
+				{1, 1, 0},
+				{0, 1, 1},
+				{0, 0, 0}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 0, 1},
+				{0, 1, 1},
+				{0, 1, 0}
 			},{
-				{1, 1},
-				{1, 1}
+				{0, 0, 0},
+				{1, 1, 0},
+				{0, 1, 1}
 			},{
-				{1, 1},
-				{1, 1}
-			},
+				{0, 1, 0},
+				{1, 1, 0},
+				{1, 0, 0}
+			}
 		}
 	}
 };
 
-int main() {
-	Color cur;
+void setBlock(Block* block, ShapeId shape, Color color, bool current) {
+	block->shape = shape; // 設定方塊的形狀
+	block->color = color; // 設定方塊的顏色
+	block->current = current; // 設定方塊為當前方塊
+}
 
-	//有幾種方塊
-	for (int i = 0; i < 1; i++) {
-		//印出方塊樣式
-		for (int r = 0; r < 4; r++) {
-			for (int s = 0; s < shape[i].size; s++) {
-				for (int t = 0; t < shape[i].size; t++) {
-					if (shape[i].rotates[r][s][t] == 0) {
-						cur = WHITE;
-					}
-					else {
-						cur = shape[i].color;
-					}
-					printf("\033[%dm \033[0m", cur);
-				}
-				printf("\n");
-			}
-			printf("\n");
+void resetBlock(Block* block) {
+	block->shape = EMPTY; // 重置方塊的形狀為空
+	block->color = BLACK; // 重置方塊的顏色為黑色
+	block->current = false; // 重置當前方塊標記
+}
+
+
+
+int main() {
+	Block canvas[CANVAS_HEIGHT][CANVAS_WIDTH]; // 畫布
+	// 初始化畫布
+	for (int i = 0; i < CANVAS_HEIGHT; i++) {
+		for (int j = 0; j < CANVAS_WIDTH; j++) {
+			resetBlock(&canvas[i][j]);
 		}
+	}
+
+	// 設定一個方塊
+	for (int i = 0; i < CANVAS_HEIGHT; i++) {
+		printf("|");
+		for (int j = 0; j < CANVAS_WIDTH; j++) {
+			printf("-1");
+		}
+		printf("|\n");
 	}
 
 	return 0;
